@@ -49,7 +49,7 @@ def affichage():
     #création fenêtre
     root=Tk()
     sdf=pokemon
-    root.geometry('100x100')
+    root.geometry('1000x1000')
     #root.attributes('-fullscreen',True)
     root.configure(background='#DB261D')
 
@@ -79,21 +79,37 @@ def affichage():
     labelclassementD.place(relx=0.4,rely=0.12)
 
     #Check button pour choisir le ou les critères de filtre
+    rootHeight = root.winfo_height()
+    rootWidth = root.winfo_width()
+    frameCheck = Frame(root,background='grey')
+    frameCheck.place(relx=0.5,rely=0.3,relheight=0.35,relwidth=0.3)
+    frameCheckHeight=frameCheck.winfo_height()
+    frameCheckWidth = frameCheck.winfo_width()
     listefiltres=[]
-    def ajoutliste(texte,listefiltres):
-        listefiltres=listefiltres+[str(texte)]
-    def creerCheckbutton(texte,a,b):
-        checkbox=Checkbutton(root, text=str(texte), command=ajoutliste(texte,listefiltres))
-        checkbox.place(relx=a/1000,rely=b/1000)
+    def modifliste(texte,listefiltres,etat): #on crée une fonction qui ajoute les filtres à appliquer
+        if etat == 1 :
+            listefiltres=listefiltres+[str(texte)]
+        if etat == 0 :
+            listefiltres=listefiltres-[str(texte)]
 
-    for i in range (0,len(listeAttribut)) :
+    class checkbutton :
+        def __init__(self,):
+
+    def creerCheckbutton(texte,a,b): #on définit une fonction qui crée et place un bouton cochable
+        cbVar=IntVar()
+        checkbox=Checkbutton(frameCheck, variable=cbVar, text=str(texte), offvalue=0, onvalue=1, command=modifliste(texte,listefiltres,cbVar))
+        checkbox.place(relx=a,rely=b)
+        entry=Entry(frameCheck, command=)
+
+
+    for i in range (0,len(listeAttribut)) : #boucle qui crée autant de boutons cochables qu'il y a de colonnes dans le dataframe
         texte=str(listeAttribut[i])
-        if i*10 < 500 :
-            a=500
-            b=i*27
+        if i*0.1 < 1 :
+            a=0.1
+            b=i*0.1
         else :
-            a=600
-            b=i*27 % 500
+            a=0.6
+            b=i*0.1 % 1
         creerCheckbutton(texte,a,b)
 
 

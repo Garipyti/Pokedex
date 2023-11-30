@@ -85,21 +85,27 @@ def affichage():
     frameCheck.place(relx=0.5,rely=0.3,relheight=0.35,relwidth=0.3)
     frameCheckHeight=frameCheck.winfo_height()
     frameCheckWidth = frameCheck.winfo_width()
-    listefiltres=[]
-    def modifliste(texte,listefiltres,etat): #on crée une fonction qui ajoute les filtres à appliquer
-        if etat == 1 :
-            listefiltres=listefiltres+[str(texte)]
-        if etat == 0 :
-            listefiltres=listefiltres-[str(texte)]
+    dicofiltres={}
 
-    class checkbutton :
-        def __init__(self,):
+    class checkbutton : #classe de boutons cochables
+        def __init__(self,texte,a,b):
+            self.texte=texte
+            self.a=a
+            self.b=b
 
-    def creerCheckbutton(texte,a,b): #on définit une fonction qui crée et place un bouton cochable
-        cbVar=IntVar()
-        checkbox=Checkbutton(frameCheck, variable=cbVar, text=str(texte), offvalue=0, onvalue=1, command=modifliste(texte,listefiltres,cbVar))
-        checkbox.place(relx=a,rely=b)
-        entry=Entry(frameCheck, command=)
+        def creerCheckbutton(self):  # on définit une fonction qui crée et place un bouton cochable et son entrée associée
+            self.cbVar = IntVar()
+            self.ztVar= StringVar()
+            self.dico={self.texte:[self.cbVar,self.ztVar]} #on crée un item propre à chaque bouton, qui a pour key le nom du filtre et en value une liste avec l'etat et l'attribut de tri
+            checkbox = Checkbutton(frameCheck, variable=self.cbVar, text=str(self.texte), offvalue=0, onvalue=1)
+            checkbox.place(relx=self.a, rely=self.b)
+            #def updatedico(self,VarTexte,dicofiltres):
+                #dicofiltres.update(self.dico)
+            #zt=Entry(frameCheck, variable=self.ztVar, command=updatedico(self,self.ztVar,dicofiltres))
+            #zt.place(relx=a+0.1,rely=b)
+
+
+
 
 
     for i in range (0,len(listeAttribut)) : #boucle qui crée autant de boutons cochables qu'il y a de colonnes dans le dataframe
@@ -110,7 +116,8 @@ def affichage():
         else :
             a=0.6
             b=i*0.1 % 1
-        creerCheckbutton(texte,a,b)
+        nvbouton=checkbutton(texte,a,b)
+        nvbouton.creerCheckbutton()
 
 
 affichage()

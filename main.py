@@ -378,7 +378,7 @@ def affichage(pokemon):
         ax.set_ylim(0, 1)
         ax.set_rlabel_position(180 / variables)
 
-        plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1))
+        plt.legend(loc='upper right', bbox_to_anchor=(1.6, 1))
         return fig
 
     # Fonction pour afficher le graphique dans Tkinter

@@ -354,7 +354,7 @@ def affichage(pokemon):
         angles = np.linspace(0, 2 * np.pi, variables, endpoint=False).tolist()
         angles += angles[:1]
 
-        fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
+        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
 
         for pokemon, couleur in pokemons:
             valeurs = df_normalisé.loc[pokemon, attributs].tolist()
@@ -378,7 +378,7 @@ def affichage(pokemon):
         ax.set_ylim(0, 1)
         ax.set_rlabel_position(180 / variables)
 
-        plt.legend(loc='upper right')
+        plt.legend(loc='upper right', bbox_to_anchor=(1.1, 1))
         return fig
 
     # Fonction pour afficher le graphique dans Tkinter

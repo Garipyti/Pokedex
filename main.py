@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import math
 import random
-pokemon = pd.read_csv("pokemon.csv") # il y aura peut-être besoin d'enlever les NaN plus tard
+pokemon = pd.read_csv("pokemon.csv")
 donnees_pokemon = pd.read_csv('pokemon.csv', index_col='Name')
 
 ##########méthodes de tri##########

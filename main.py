@@ -7,7 +7,7 @@ from matplotlib.backends.backend_tkagg import FigureCanvasTkAgg
 import numpy as np
 import math
 import random
-pokemon = pd.read_csv("pokemon.csv") # il y aura peut-être besoin d'enlever les NaN plus tard
+pokemon = pd.read_csv("pokemon.csv")
 donnees_pokemon = pd.read_csv('pokemon.csv', index_col='Name')
 
 ##########méthodes de tri##########
@@ -19,27 +19,69 @@ class filtre(pd.DataFrame,ABC) : #méthode de filtre générale
 
 class filtrec(filtre): #méthode pour chercher les pokémons avec un attribut = valeur
     def filtre(self, attribut, valeur):
-        if pd.api.types.is_numeric_dtype(self[attribut]) and pd.api.types.is_numeric_dtype(valeur):
+        try:
+            # Si la colonne est de type numérique, convertir la valeur en float
+            if pd.api.types.is_numeric_dtype(self[attribut]):
+                valeur = float(valeur)
+            else:
+                valeur = str(valeur)
+
+            # Filtrer le dataframe
+            sous_dataframe = self[self[attribut] == valeur]
+
+            return sous_dataframe
+
+        except ValueError:
+            print(f"Erreur : La valeur '{valeur}' n'est pas compatible avec le type de la colonne '{attribut}'.")
+        #if pd.api.types.is_numeric_dtype(self[attribut]) and pd.api.types.is_numeric_dtype(valeur):
             # Les deux sont des types numériques, effectuer la comparaison numérique
-            return self[self[attribut] == valeur]
-        else:
+            #return self[self[attribut] == valeur]
+        #else:
             # L'un des deux (ou les deux) n'est pas numérique, effectuer une comparaison de chaînes
-            return self[self[attribut].astype(str) == str(valeur)]
+            #return self[self[attribut].astype(str) == str(valeur)]
 
 class filtreinf(filtre): #méthode pour chercher les pokémons avec un attribut < valeur
     def filtre(self,attribut,valeur):
-        if pd.api.types.is_numeric_dtype(self[attribut]) and pd.api.types.is_numeric_dtype(valeur):
+        try:
+            # Si la colonne est de type numérique, convertir la valeur en float
+            if pd.api.types.is_numeric_dtype(self[attribut]):
+                valeur = float(valeur)
+            else:
+                valeur = str(valeur)
+
+            # Filtrer le dataframe
+            sous_dataframe = self[self[attribut] < valeur]
+
+            return sous_dataframe
+
+        except ValueError:
+            print(f"Erreur : La valeur '{valeur}' n'est pas compatible avec le type de la colonne '{attribut}'.")
+
+        #if pd.api.types.is_numeric_dtype(self[attribut]) and pd.api.types.is_numeric_dtype(valeur):
             # Les deux sont des types numériques, effectuer la comparaison numérique
-            return self[self[attribut] < valeur]
-        else:
+            #return self[self[attribut] < valeur]
+        #else:
             # L'un des deux (ou les deux) n'est pas numérique, effectuer une comparaison de chaînes
-            return self[self[attribut].astype(str) < str(valeur)]
+            #return self[self[attribut].astype(str) < str(valeur)]
 
 
 #méthode pour chercher les pokémons avec un attribut > valeur
 class filtresup(filtre):
     def filtre(self,attribut,valeur):
-        return self[self[attribut].astype(str) > str(valeur)]
+        try:
+            # Si la colonne est de type numérique, convertir la valeur en float
+            if pd.api.types.is_numeric_dtype(self[attribut]):
+                valeur = float(valeur)
+            else:
+                valeur = str(valeur)
+
+            # Filtrer le dataframe
+            sous_dataframe = self[self[attribut] > valeur]
+
+            return sous_dataframe
+
+        except ValueError:
+            print(f"Erreur : La valeur '{valeur}' n'est pas compatible avec le type de la colonne '{attribut}'.")
         #if pd.api.types.is_numeric_dtype(self[attribut]) and pd.api.types.is_numeric_dtype(valeur):
             # Les deux sont des types numériques, effectuer la comparaison numérique
             #return self[self[attribut] > valeur]
@@ -62,12 +104,6 @@ class cc(classement) : #méthode de classement par ordre croissant
     def classement(self,attribut):
         return (pd.DataFrame.sort_values(self,attribut, ascending=True))
 
-#
-
-
-# ex syntaxe : print(filtrec.filtre(pokemon,"Speed",180))
-
-#######Vue########
 def affichage(pokemon):
 ##################################################
     #création fenêtre
@@ -120,9 +156,9 @@ def affichage(pokemon):
                 self.tree.selection_set(self.current_row)
                 self.tree.focus(self.current_row)
 
-        def update_dataframe(self, new_dataframe):
+        def update_dataframe(self, nv_dataframe):
             # Met à jour le DataFrame et recharge le Treeview
-            self.dataframe = new_dataframe
+            self.dataframe = nv_dataframe
             self.current_row = 0
 
             for i in self.tree.get_children():
@@ -131,8 +167,7 @@ def affichage(pokemon):
             for index, row in self.dataframe.iterrows():
                 self.tree.insert("", "end", values=list(row))
 
-        def close(self):
-            # Fermer la fenêtre et retirer l'instance de la liste des instances actives
+        def close(self): #Méthode pour s'assurer qu'un seul DF est affiché à la fois
             self.master.destroy()
             DataFrameViewer.instances.remove(self)
 #################################################
@@ -182,7 +217,7 @@ def affichage(pokemon):
             pokemon_rapide, pokemon_lent = pokemon_lent, pokemon_rapide
 
     #création frame radiobuttons :
-    frameRadio=Frame(root)
+    frameRadio=Frame(root,relief='raised',highlightbackground='red',borderwidth=2)
     frameRadio.place(relx=0,rely=0.1,relwidth=0.4,relheight=0.1)
 
     #Menu déroulant pour choisir critère de classement
@@ -193,34 +228,38 @@ def affichage(pokemon):
 
     choixClassement.pack()
     choixClassement.bind("<<ComboboxSelected>>", action)
-    choixClassement.grid(row=1,column=0,sticky=W,columnspan=2)
-    #choixClassement.place(relwidth=0.2,relheight=0.2)
+    choixClassement.place(relx=0,rely=0.3,relwidth=0.3,relheight=0.3)
     choixClassementLabel=Label(frameRadio,text="Classer selon :")
-    choixClassementLabel.grid(row=0,column=0)
+    choixClassementLabel.place(relx=0,rely=0,relwidth=0.3)
 
     #radio buttons pour choisir si classement croissant ou décroissant
-    labelSensclassement=Label(frameRadio, text="dans l'ordre")
-    labelSensclassement.grid(row=0,column=3,sticky=W,columnspan=2)
+    labelSensclassement=Label(frameRadio, text="dans l'ordre:")
+    labelSensclassement.place(relx=0.4,rely=0,relwidth=0.3)
     cStringVar=StringVar(root,'sensclassement')
+
+    #Bouton pour choisir Classement croissant
     classementC=Radiobutton(frameRadio, variable=cStringVar, value="C" )
-    classementC.grid(row=1,column=3,sticky=W)
+    classementC.place(relx=0.42,rely=0.35,relwidth=0.2,relheight=0.2)
     labelclassementC=Label(frameRadio,text='croissant')
-    labelclassementC.grid(row=1,column=4,sticky=W)
+    labelclassementC.place(relx=0.5,rely=0.35,relheight=0.3)
+
+    #Bouton pour choisir Classement décroissant
     classementD=Radiobutton(frameRadio,variable=cStringVar,value="D")
-    classementD.grid(row=2,column=3,sticky=W)
+    classementD.place(relx=0.42,rely=0.75,relheight=0.2,relwidth=0.2)
     labelclassementD=Label(frameRadio,text='décroissant')
-    labelclassementD.grid(row=2,column=4,sticky=W)
+    labelclassementD.place(relx=0.5,rely=0.7,relheight=0.3)
 
     #Labels au-dessus du frame des checkbuttons
     ColonnesLabel=Label(root,text="Cocher pour filtrer la colonne, puis entrer une valeur-filtre\n"
                                   " et choisir une relation d'ordre")
-    ColonnesLabel.place(relx=0.5,rely=0.05)
+    ColonnesLabel.place(relx=0.6,rely=0.05)
 
 
     #Check button pour choisir le ou les critères de filtre
-    frameCheck = Frame(root)
-    frameCheck.place(relx=0.5,rely=0.1,relheight=0.35,relwidth=0.4)
-    dicofiltres={}
+    frameCheck = Frame(root,relief='raised',highlightbackground='red',borderwidth=2)
+    frameCheck.place(relx=0.58,rely=0.1,relheight=0.35,relwidth=0.4)
+
+    dicofiltres={} #Dictionnaire qui permet plus bas de savoir comment appliquer quels filtres
 
     class checkbutton : #classe de boutons cochables
             _registre = []
@@ -247,12 +286,12 @@ def affichage(pokemon):
 
                 #Création de l'Entry
                 self.zt=Entry(frameCheck, textvariable=self.ztVar) #crée la zone de texte associée au bouton
-                self.zt.place(relx=a+0.24,rely=b,relheight=0.08,relwidth=0.1)
+                self.zt.place(relx=a+0.24,rely=b,relheight=0.08,relwidth=0.12)
 
                 #Création du menu déroulant
                 listeRelOrdre=["<",">","="]
                 self.mdRO = ttk.Combobox(frameCheck, values=listeRelOrdre)
-                self.mdRO.place(relx=a+0.35,rely=b,relheight=0.07,relwidth=0.1)
+                self.mdRO.place(relx=a+0.35,rely=b,relheight=0.08,relwidth=0.1)
 
     for i in range (0,len(listeAttribut)) : #boucle qui crée autant de boutons cochables qu'il y a de colonnes dans le dataframe
         texte=str(listeAttribut[i])
@@ -269,21 +308,20 @@ def affichage(pokemon):
         nvbouton=checkbutton(texte,a,b,zt,mdRO,checkbox)
         nvbouton.creerCheckbutton()
 
-    #Création du bouton d'affichage du résultat
+    #Création d'une fonction d'affichage du DF
     def clique_bouton():
         sdf = pokemon.copy()
-        for i in checkbutton._registre:
+        for i in checkbutton._registre: #On itère sur l'ensemble des boutons cochables
             i.dico={i.texte:[i.cbVar.get(),i.ztVar.get(),i.mdRO.get()]}
-            dicofiltres.update(i.dico)
+            dicofiltres.update(i.dico) #Lorsqu'on appuie sur le bouton, le dictionnaire des filtres est mis à jour avec les nouvelles entrées
         listeobjets = dicofiltres.items()
-        for i in listeobjets:
+        for i in listeobjets: #Pour chaque critère de filtre possible, on vérifie s'il faut modifier le DF
             listeauxi = list(i)
             texte = listeauxi[0]
             stockinfo = listeauxi[1]
-            if stockinfo[0] == True:
-                if stockinfo[1]:
-                    if pd.api.types.is_numeric_dtype(sdf[texte]) and stockinfo[2] in ("<", ">", "="):
-
+            if stockinfo[0] : #Si le bouton est coché
+                if stockinfo[1]: #Si la zone de texte contient quelque-chose
+                    if pd.api.types.is_numeric_dtype(sdf[texte]) and stockinfo[2] in ("<", ">", "="): #On vérifie la nature de la colonne
                         try:
                             valeur = float(stockinfo[1])
                         except ValueError:
@@ -298,25 +336,15 @@ def affichage(pokemon):
                         continue
                     if stockinfo[2] == "<":
                         sdf = filtreinf.filtre(sdf, texte, valeur)
-                        print("tri inf effectué")
+
                     elif stockinfo[2] == ">":
                         sdf = filtresup.filtre(sdf, texte, valeur)
-                        print("tri sup effectué")
+
                     elif stockinfo[2] == "=":
                         sdf = filtrec.filtre(sdf, texte, valeur)
-                        print("tri c effectué")
 
-                #if (stockinfo[2] == "<"):
-                    #sdf=filtreinf.filtre(sdf,texte,stockinfo[1])
-                    #print("tri inf effectué")
-                #if (stockinfo[2] == ">" and stockinfo[1]!=""):
-                    #sdf = filtresup.filtre(sdf, texte, stockinfo[1])
-                    #print("tri sup effectué")
-                #if (stockinfo[2] == "=" and stockinfo[1]!=""):
-                    #sdf = filtrec.filtre(sdf, texte, stockinfo[1])
-                    #print("tri c effectué")
 
-        CC=str(choixClassement.get())
+        CC=str(choixClassement.get()) #On récupère la requête de classement ici
         Sens=cStringVar.get()
         if str(Sens)=="C":
             sdf=cc.classement(sdf,CC)
@@ -324,19 +352,19 @@ def affichage(pokemon):
             sdf=cd.classement(sdf,CC)
         else :
             sdf=sdf
-        #print("It lives !")
-        data_frame_viewer.update_dataframe(sdf)
-        print(sdf)
+        data_frame_viewer.update_dataframe(sdf) #Après application de toutes les requêtes, on utilise la méthode qui met à jour le DF affiché
+
+    #Création du bouton afficheur
     boutonResultat = Button(root, text="Afficher DataFrame", command=clique_bouton)
-    boutonResultat.place(relx=0.8, rely=0.4)
+    boutonResultat.place(relx=0.8, rely=0.4,relwidth=0.15,relheight=0.04)
     data_frame_viewer = DataFrameViewer(frameViewer, pokemon)
 
 #################################
     #Création d'une frame pour abriter le graph radar
 
-    frameGraph=Frame(root,bg='red')
+    frameGraph=Frame(root,relief='raised',highlightbackground='red',borderwidth=2)
     frameGraph.place(relx=0,rely=0.22,relwidth=0.52,relheight=0.48)
-    #Création de la fonction d'affichage du graph radar
+    ##Création de la fonction d'affichage du graph radar
     # Charger les données Pokémon depuis un fichier CSV
     df = pd.read_csv('pokemon.csv', index_col='Name')
 
@@ -354,7 +382,7 @@ def affichage(pokemon):
         angles = np.linspace(0, 2 * np.pi, variables, endpoint=False).tolist()
         angles += angles[:1]
 
-        fig, ax = plt.subplots(figsize=(8, 8), subplot_kw=dict(polar=True))
+        fig, ax = plt.subplots(figsize=(6, 6), subplot_kw=dict(polar=True))
 
         for pokemon, couleur in pokemons:
             valeurs = df_normalisé.loc[pokemon, attributs].tolist()
@@ -378,7 +406,7 @@ def affichage(pokemon):
         ax.set_ylim(0, 1)
         ax.set_rlabel_position(180 / variables)
 
-        plt.legend(loc='upper right', bbox_to_anchor=(1.6, 1))
+        plt.legend(loc='upper right', bbox_to_anchor=(2.1, 1))
         return fig
 
     # Fonction pour afficher le graphique dans Tkinter
@@ -386,9 +414,9 @@ def affichage(pokemon):
         canvas = FigureCanvasTkAgg(fig, master=frameGraph)
         canvas_widget = canvas.get_tk_widget()
         #canvas_widget.column(row=5, column=5, columnspan=3)
-        canvas_widget.place(relx=0,rely=0.4,relwidth=0.8,relheight=0.6)
+        canvas_widget.place(relx=0,rely=0.4,relwidth=1,relheight=0.6)
 
-    # Fonction appelée quand il y le  clic sur le bouton
+    # Fonction appelée quand on  clique sur le bouton
     def on_button_click():
         # Récupérer les noms des Pokémon depuis la saisie
         pokemon1 = entry_pokemon1.get()
@@ -405,7 +433,6 @@ def affichage(pokemon):
     # Saisie pour chaque pokémon
     ttk.Label(frameGraph, text="Nom Pokémon 1:").place(relx=0, rely=0,relwidth=0.3)
     entry_pokemon1 = ttk.Entry(frameGraph)
-    #entry_pokemon1.grid(row=1, column=1, pady=10)
     entry_pokemon1.place(relx=0.3,rely=0,relwidth=0.25)
 
     ttk.Label(frameGraph, text="Nom Pokémon 2:").place(relx=0,rely=0.15,relwidth=0.3)
@@ -418,15 +445,15 @@ def affichage(pokemon):
 
     #  bouton pour générer le graphique radar
     button_generate = ttk.Button(frameGraph, text="Générer le Graphique Radar", command=on_button_click)
-    button_generate.place(relx=0.6,rely=0.30,relwidth=0.4)
+    button_generate.place(relx=0.6,rely=0.30,relwidth=0.35)
 
     #Création du bouton d'affichage du graph radar
-    BoutonGraph=Button(frameGraph,command=on_button_click)
+
 
     #######################
     #Création du frame pour les combats pokémons
     frameBagarre=Frame(root,relief='raised',highlightbackground='red',borderwidth=2)
-    frameBagarre.place(relx=0.70,rely=0.47,relheight=0.2,relwidth=0.3)
+    frameBagarre.place(relx=0.68,rely=0.47,relheight=0.2,relwidth=0.3)
     LabelBagarre=Label(frameBagarre,text='Choisir les deux pokémons\n'
                                          'à faire combattre')
     LabelBagarre.grid(row=0,column=0,sticky='w',columnspan=3)
@@ -445,7 +472,7 @@ def affichage(pokemon):
 
     #Création du bouton pour afficher le résultat
     varResultat=StringVar()
-    labelResultat=Label(frameBagarre,textvariable=varResultat,font=('Times New Roman',8,'bold'))
+    labelResultat=Label(frameBagarre,textvariable=varResultat,font=('Times New Roman',6,'bold'))
     labelResultat.place(relx=0.5,rely=0,relheight=0.75,relwidth=0.5)
     def commandBagarre():
         pokemon1=ztPokemon1.get()
@@ -453,15 +480,21 @@ def affichage(pokemon):
         varResultat.set(combat_pokemon(pokemon1,pokemon2))
 
     boutonBagarre=Button(frameBagarre,text="Lancer combat",command=commandBagarre)
-    boutonBagarre.place(relx=0.6,rely=0.8)
+    boutonBagarre.place(relx=0.6,rely=0.8,relwidth=0.4,relheight=0.2)
 
-#Affichage du DataFrame#
+############################
+    #bouton pour fermer la fenêtre
+    def fermer_fenetre():
+        root.destroy()
+    fermeture=Button(root,command=fermer_fenetre,text="X",bg='red')
+    fermeture.place(relx=0,rely=0)
+
+
+
 
 affichage(pokemon)
 mainloop()
 
-#print(pokemon[pokemon["Speed"]>100])
-#print(filtrec.filtre(pokemon,"Speed",180))
 
 
 
